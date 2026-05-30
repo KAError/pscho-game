@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10 Days: The Profiler</title>
+    <style>
+        /* Modern, slightly mysterious styling for a psychology game */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .game-container {
+            background-color: #16213e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.5);
+            width: 400px;
+            max-width: 90%;
+            text-align: center;
+        }
+        h1 {
+            color: #e94560;
+            margin-top: 0;
+            font-size: 24px;
+        }
+        .day-counter {
+            font-size: 14px;
+            color: #0f3460;
+            background: #e6e6e6;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .clue-box {
+            background-color: #0f3460;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: left;
+            min-height: 120px;
+        }
+        .clue-box p {
+            margin: 8px 0;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        .clue-box span {
+            font-weight: bold;
+            color: #e94560;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        button {
+            background-color: #e94560;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        button:hover {
+            background-color: #c81d3f;
+        }
+        #result-screen {
+            display: none;
+        }
+        .feedback {
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            height: 25px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="game-screen">
+        <h1>Psycho-Game: The Profiler</h1>
+        <div class="day-counter" id="day-text">Day 1 of 10</div>
+        
+        <div class="feedback" id="feedback-text"></div>
+
+        <div class="clue-box">
+            <p><span>Subject Profile:</span></p>
+            <p id="clue1"></p>
+            <p id="clue2"></p>
+            <p id="clue3"></p>
+        </div>
+
+        <h3>Who are you analyzing?</h3>
+        <div class="options" id="options-container">
+            </div>
+    </div>
+
+    <div class="game-container" id="result-screen">
+        <h1>Evaluation Complete</h1>
+        <p>You have finished your 10-day psychological assessment.</p>
+        <h2 id="final-score">Score: 0 / 10</h2>
+        <p id="final-message"></p>
+        <button onclick="restartGame()" style="margin-top: 20px; width: 100%;">Play Again</button>
+    </div>
+
+    <script>
+        // Here is the database of your 10 subjects. You can easily change the text here!
+        const subjects = [
+            {
+                correctAnswer: "The Perfectionist",
+                clues: ["Their desk is meticulously organized with a ruler.", "They color-code their grocery lists.", "They get visibly anxious if a picture frame is slightly crooked."],
+                options: ["The Narcissist", "The Perfectionist", "The Introvert", "The Optimist"]
+            },
+            {
+                correctAnswer: "The Narcissist",
+                clues: ["They constantly check their reflection in their phone screen.", "They somehow turn every conversation back to themselves.", "They often take credit for their coworkers' success."],
+                options: ["The Narcissist", "The Empath", "The Paranoiac", "The Perfectionist"]
+            },
+            {
+                correctAnswer: "The Paranoiac",
+                clues: ["They cover their laptop webcam with black tape.", "They think the office coffee machine is bugged.", "They refuse to use digital clocks or smart home devices."],
+                options: ["The Paranoiac", "The People-Pleaser", "The Liar", "The Introvert"]
+            },
+            {
+                correctAnswer: "The Introvert",
+                clues: ["They wear noise-canceling headphones with no music playing.", "They actively avoid eye contact in the hallway.", "They eat their lunch in their car to avoid the breakroom."],
+                options: ["The Narcissist", "The Optimist", "The Introvert", "The Manipulator"]
+            },
+            {
+                correctAnswer: "The Pathological Liar",
+                clues: ["They casually claimed they invented the toaster.", "Their backstory changes every single time you ask them.", "They swore they had lunch with an alien yesterday."],
+                options: ["The Procrastinator", "The Pathological Liar", "The Introvert", "The Paranoiac"]
+            },
+            {
+                correctAnswer: "The People-Pleaser",
+                clues: ["They apologize to inanimate objects when they bump into them.", "They are currently doing 14 different favors for other people.", "They will never, ever choose the restaurant for lunch."],
+                options: ["The People-Pleaser", "The Manipulator", "The Narcissist", "The Liar"]
+            },
+            {
+                correctAnswer: "The Manipulator",
+                clues: ["They secretly pit their friends against each other.", "They always have a hidden agenda behind their questions.", "They feign absolute innocence when things go wrong."],
+                options: ["The Introvert", "The Manipulator", "The Optimist", "The Perfectionist"]
+            },
+            {
+                correctAnswer: "The Procrastinator",
+                clues: ["They claim they 'work best under pressure'.", "Their desk is covered in to-do lists from three years ago.", "They panic-type all their reports at 4:59 PM."],
+                options: ["The Perfectionist", "The Paranoiac", "The Procrastinator", "The Empath"]
+            },
+            {
+                correctAnswer: "The Impostor",
+                clues: ["They have 3 PhDs but are terrified they are a 'fraud'.", "They heavily downplay every compliment they receive.", "They live in constant fear of being 'found out' by the boss."],
+                options: ["The Impostor", "The Narcissist", "The Optimist", "The Liar"]
+            },
+            {
+                correctAnswer: "The Optimist",
+                clues: ["They actually smile during power outages.", "They bring freshly baked donuts on rainy Mondays.", "They view a flat tire as an 'unexpected walking opportunity'."],
+                options: ["The Manipulator", "The Optimist", "The Procrastinator", "The Paranoiac"]
+            }
+        ];
+
+        let currentDay = 0;
+        let score = 0;
+
+        // Load the first subject when the app starts
+        window.onload = loadSubject;
+
+        function loadSubject() {
+            // Update the day counter
+            document.getElementById('day-text').innerText = `Day ${currentDay + 1} of 10`;
+            
+            // Clear feedback text
+            document.getElementById('feedback-text').innerText = "";
+
+            // Get current subject data
+            const subject = subjects[currentDay];
+
+            // Display the clues
+            document.getElementById('clue1').innerText = "• " + subject.clues[0];
+            document.getElementById('clue2').innerText = "• " + subject.clues[1];
+            document.getElementById('clue3').innerText = "• " + subject.clues[2];
+
+            // Generate the multiple choice buttons
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = ""; // Clear old buttons
+            
+            subject.options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.innerText = option;
+                btn.onclick = () => checkAnswer(option, subject.correctAnswer);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct) {
+            const feedback = document.getElementById('feedback-text');
+            
+            if (selected === correct) {
+                score++;
+                feedback.style.color = "#4CAF50"; // Green for correct
+                feedback.innerText = "Correct Analysis!";
+            } else {
+                feedback.style.color = "#e94560"; // Red for incorrect
+                feedback.innerText = `Incorrect. It was ${correct}.`;
+            }
+
+            // Disable buttons temporarily so user can't click multiple times
+            const buttons = document.querySelectorAll('.options button');
+            buttons.forEach(btn => btn.disabled = true);
+
+            // Wait 1.5 seconds, then move to next day
+            setTimeout(() => {
+                currentDay++;
+                if (currentDay < subjects.length) {
+                    loadSubject();
+                } else {
+                    showEndScreen();
+                }
+            }, 1500);
+        }
+
+        function showEndScreen() {
+            document.getElementById('game-screen').style.display = "none";
+            document.getElementById('result-screen').style.display = "block";
+            
+            document.getElementById('final-score').innerText = `Final Score: ${score} / 10`;
+            
+            const message = document.getElementById('final-message');
+            if (score === 10) {
+                message.innerText = "Master Profiler! You read people like a book.";
+            } else if (score >= 7) {
+                message.innerText = "Great job! You have strong psychological instincts.";
+            } else {
+                message.innerText = "Keep practicing! Human psychology is tricky.";
+            }
+        }
+
+        function restartGame() {
+            currentDay = 0;
+            score = 0;
+            document.getElementById('game-screen').style.display = "block";
+            document.getElementById('result-screen').style.display = "none";
+            loadSubject();
+        }
+    </script>
+
+</body>
+</html>
