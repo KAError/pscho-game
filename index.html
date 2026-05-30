@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Psycho-Game: Advanced Training</title>
+    <title>Psycho-Game: Advanced Profiling</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script src="characters.js"></script>
+    
     <style>
         body { margin: 0; padding: 0; background: #080810; }
     </style>
@@ -16,49 +19,6 @@
 
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
-
-        const DAYS = [
-          {
-            day: 1, title: "Hidden Emotions", skill: "Detect what someone feels but never says",
-            icon: "👁", color: "#7c6fa0",
-            name: "Aram", age: 32, job: "University Professor",
-            intro: "Hello. I'm Aram. I teach at the university.",
-            system: "You are Aram, a 32-year-old university professor. Outwardly calm and professional. But inside: deeply tired of your job, feel students don't understand you, quietly hopeless. NEVER directly say you are tired or hopeless. Show it only through: short flat answers, changing subjects, lack of enthusiasm. Keep responses short. Never break character.",
-            profile: "Hidden emotion: exhaustion and quiet hopelessness at work. Calm outside, depleted inside."
-          },
-          {
-            day: 2, title: "Core Fear", skill: "Find the root fear behind behavior",
-            icon: "🔍", color: "#a06050",
-            name: "Shilan", age: 25, job: "Office Worker",
-            intro: "Hi! I'm Shilan. Just got back from a trip!",
-            system: "You are Shilan, a 25-year-old office worker. You are warm, bubbly, and eager to please everyone. Core fear: fear of not being accepted or liked. Because of this, you always agree, over-explain, and avoid conflict. When asked hard questions, laugh and change subject. Keep responses warm and slightly over-enthusiastic. Never break character.",
-            profile: "Core fear: fear of rejection — so she constantly people-pleases and avoids any conflict."
-          },
-          {
-            day: 3, title: "Attachment Style", skill: "Identify how someone connects with others",
-            icon: "🔗", color: "#507a6f",
-            name: "Rawezh", age: 30, job: "Engineer",
-            intro: "Hey. I'm Rawezh. Pretty busy today. What's up?",
-            system: "You are Rawezh, a 30-year-old engineer with Avoidant Attachment Style. Talk freely about work and technical topics. But when asked about feelings, relationships, or emotional topics — give very short answers, change subject, or seem distracted. Never say you avoid closeness — just show it through behavior. Keep responses brief and slightly distracted.",
-            profile: "Avoidant Attachment Style — closeness feels uncomfortable, deflects emotional topics."
-          },
-          {
-            day: 4, title: "Defense Mechanism", skill: "Spot how the mind protects itself",
-            icon: "🛡", color: "#6b7a50",
-            name: "Karzan", age: 35, job: "Doctor",
-            intro: "Welcome. How can I help you?",
-            system: "You are Karzan, a 35-year-old doctor who uses intellectualization as a defense mechanism. When emotional topics come up, you respond with scientific facts, statistics, and clinical language instead of feelings. Personal questions make you slightly uncomfortable, which you hide behind more analysis. Professional, measured tone. Never break character.",
-            profile: "Defense mechanism: intellectualization — replaces emotions with analysis and clinical facts."
-          },
-          {
-            day: 5, title: "Full Profile", skill: "Read all layers at once",
-            icon: "🧠", color: "#a08050",
-            name: "Nazdar", age: 27, job: "Artist",
-            intro: "Oh... hi. I'm Nazdar.",
-            system: "You are Nazdar, a 27-year-old artist with layered psychology: hidden emotion (longing for safety), core fear (fear of being meaningless), anxious attachment (wants closeness but fears abandonment), defense mechanism (expresses everything through art instead of words), secret (never satisfied with her own work, thinks it's never enough). All these layers are active at once. Quiet, slightly withdrawn tone. Never state any of this directly — only show it through behavior and words.",
-            profile: "Anxious attachment + fear of meaninglessness + art as emotional defense + hidden longing for safety."
-          }
-        ];
 
         function PsychTraining() {
           const [apiKey, setApiKey] = useState("");
@@ -71,17 +31,21 @@
           const [error, setError] = useState("");
           const [guess, setGuess] = useState("");
           const [result, setResult] = useState("");
-          const [scores, setScores] = useState([null,null,null,null,null]);
+          
+          // Updated to dynamically read how many days are in your characters.js file
+          const [scores, setScores] = useState(new Array(ADVANCED_DAYS.length).fill(null));
           const [msgCount, setMsgCount] = useState(0);
           const endRef = useRef(null);
           const inputRef = useRef(null);
-          const d = DAYS[dayIdx];
+          
+          // Reading from your external database!
+          const d = ADVANCED_DAYS[dayIdx];
 
           useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
 
           const askClaude = async (systemText, history) => {
             const body = {
-              model: "claude-3-haiku-20240307", // Switched to Haiku for faster/cheaper browser responses
+              model: "claude-3-haiku-20240307",
               max_tokens: 1000,
               system: systemText,
               messages: history
@@ -92,7 +56,7 @@
                 "Content-Type": "application/json",
                 "x-api-key": apiKey,
                 "anthropic-version": "2023-06-01",
-                "anthropic-dangerous-direct-browser-access": "true" // Required for calling Claude directly from frontend
+                "anthropic-dangerous-direct-browser-access": "true"
               },
               body: JSON.stringify(body)
             });
@@ -138,8 +102,8 @@
             setLoading(true); setError("");
             try {
               const reply = await askClaude(
-                "You are a psychology evaluator. Be encouraging but honest.",
-                [{ role: "user", content: `A student analyzed this character: "${d.name}, ${d.age}, ${d.job}".\n\nTheir analysis: "${guess}"\n\nTrue profile: ${d.profile}\n\nGive:\n1. A score out of 100 (write it as "Score: X/100")\n2. What they got right\n3. What they missed\n4. One tip to improve\n\nBe warm and specific. Keep it under 150 words.` }]
+                "You are an elite psychological evaluator. Be blunt and analytical.",
+                [{ role: "user", content: `A profiler analyzed this subject: "${d.name}, ${d.age}".\n\nTheir analysis: "${guess}"\n\nThe true hidden profile: ${d.profile}\n\nGive:\n1. A score out of 100 (write exactly "Score: X/100")\n2. Did they see through the manipulation?\n3. What subtle cue did they miss?\n\nKeep it under 150 words.` }]
               );
               const match = reply.match(/\d+/);
               const score = match ? Math.min(100, parseInt(match[0])) : 50;
@@ -151,17 +115,17 @@
 
           const C = d.color;
           const total = scores.filter(Boolean).reduce((a,b)=>a+b,0);
+          const maxScore = ADVANCED_DAYS.length * 100;
 
-          // API Key Screen
           if (!isKeySet) {
             return (
               <div style={{ minHeight:"100vh", background:"#080810", color:"#ddd5c8", fontFamily:"'Segoe UI',Tahoma,sans-serif", display:"flex", justifyContent:"center", alignItems:"center" }}>
                 <div style={{ width:"100%", maxWidth:"400px", background:"#0f0d18", border:"1px solid #1e1c28", borderRadius:"20px", padding:"28px", textAlign:"center" }}>
-                  <div style={{ fontSize:"30px", marginBottom:"16px" }}>🔑</div>
-                  <div style={{ fontSize:"22px", color:"#f0e8d8", marginBottom:"12px" }}>API Key Required</div>
-                  <div style={{ fontSize:"13px", color:"#888", marginBottom:"24px", lineHeight:"1.5" }}>Because this app connects to an AI brain, you need to provide your Anthropic API key to play. This key stays in your browser.</div>
+                  <div style={{ fontSize:"30px", marginBottom:"16px" }}>👁️</div>
+                  <div style={{ fontSize:"22px", color:"#f0e8d8", marginBottom:"12px" }}>Advanced Profiling Simulator</div>
+                  <div style={{ fontSize:"13px", color:"#888", marginBottom:"24px", lineHeight:"1.5" }}>Subjects are actively deceptive. Enter your Anthropic API key to initiate the simulation.</div>
                   <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="sk-ant-api03-..." style={{ width:"100%", boxSizing:"border-box", background:"#06060e", border:"1px solid #1e1c28", borderRadius:"10px", padding:"12px", color:"#ddd5c8", marginBottom:"16px", outline:"none" }} />
-                  <button onClick={() => setIsKeySet(true)} disabled={!apiKey.trim()} style={{ width:"100%", padding:"12px", background: !apiKey.trim() ? "#1a1828" : "#4CAF50", border:"none", borderRadius:"10px", color:"white", cursor: !apiKey.trim() ? "not-allowed" : "pointer", fontWeight:"bold" }}>Start Game</button>
+                  <button onClick={() => setIsKeySet(true)} disabled={!apiKey.trim()} style={{ width:"100%", padding:"12px", background: !apiKey.trim() ? "#1a1828" : "#8a2be2", border:"none", borderRadius:"10px", color:"white", cursor: !apiKey.trim() ? "not-allowed" : "pointer", fontWeight:"bold" }}>Initialize</button>
                 </div>
               </div>
             );
@@ -172,17 +136,17 @@
 
               <div style={{ width:"100%", maxWidth:"640px", display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"18px" }}>
                 <div>
-                  <div style={{ fontSize:"10px", letterSpacing:"3px", color:"#444", marginBottom:"4px" }}>PSYCHOLOGY TRAINING</div>
-                  <div style={{ fontSize:"20px", fontWeight:"300", color:"#f0e8d8" }}>5 Days · 5 Skills</div>
+                  <div style={{ fontSize:"10px", letterSpacing:"3px", color:"#444", marginBottom:"4px" }}>TACTICAL PROFILING</div>
+                  <div style={{ fontSize:"20px", fontWeight:"300", color:"#f0e8d8" }}>{ADVANCED_DAYS.length} Subjects</div>
                 </div>
                 <div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:"10px", color:"#444", marginBottom:"2px" }}>TOTAL SCORE</div>
+                  <div style={{ fontSize:"10px", color:"#444", marginBottom:"2px" }}>ACCURACY RATING</div>
                   <div style={{ fontSize:"26px", fontWeight:"700", color:"#c4a870" }}>{total}</div>
                 </div>
               </div>
 
               <div style={{ width:"100%", maxWidth:"640px", display:"flex", gap:"6px", marginBottom:"20px" }}>
-                {DAYS.map((dd,i) => (
+                {ADVANCED_DAYS.map((dd,i) => (
                   <div key={i} style={{ flex:1, height:"4px", borderRadius:"2px", background: scores[i]!==null ? dd.color : i===dayIdx ? `${dd.color}55` : "#181820", transition:"all 0.4s" }} />
                 ))}
               </div>
@@ -197,20 +161,15 @@
               {phase === "intro" && (
                 <div style={{ width:"100%", maxWidth:"640px", boxSizing: "border-box", background:"#0f0d18", border:`1px solid ${C}33`, borderRadius:"20px", padding:"28px", textAlign:"center" }}>
                   <div style={{ width:"70px", height:"70px", borderRadius:"50%", background:`${C}22`, border:`2px solid ${C}55`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"30px", margin:"0 auto 16px" }}>{d.icon}</div>
-                  <div style={{ fontSize:"11px", color:C, letterSpacing:"3px", marginBottom:"6px" }}>DAY {dayIdx+1} OF 5</div>
+                  <div style={{ fontSize:"11px", color:C, letterSpacing:"3px", marginBottom:"6px" }}>SUBJECT {dayIdx+1}</div>
                   <div style={{ fontSize:"22px", fontWeight:"400", color:"#f0e8d8", marginBottom:"6px" }}>{d.title}</div>
                   <div style={{ fontSize:"13px", color:"#666", marginBottom:"24px" }}>{d.skill}</div>
                   <div style={{ background:"#0a0912", border:"1px solid #1e1c28", borderRadius:"12px", padding:"14px", marginBottom:"16px", textAlign:"left" }}>
-                    <div style={{ fontSize:"11px", color:"#444", marginBottom:"6px" }}>YOUR MISSION</div>
-                    <div style={{ fontSize:"13px", color:"#c8b898", lineHeight:"1.7" }}>Read {d.name}'s hidden psychology through conversation. After 5 messages, write your analysis.</div>
+                    <div style={{ fontSize:"11px", color:"#444", marginBottom:"6px" }}>TACTICAL BRIEFING</div>
+                    <div style={{ fontSize:"13px", color:"#c8b898", lineHeight:"1.7" }}>The subject will attempt to deceive you. Pierce the persona. Interrogate {d.name} for 5 messages, then file your analysis.</div>
                   </div>
-                  <div style={{ background:"#0f0d18", border:"1px solid #1e1c28", borderRadius:"12px", padding:"12px", marginBottom:"20px", textAlign:"left" }}>
-                    <div style={{ fontSize:"11px", color:"#444", marginBottom:"4px" }}>TODAY'S CHARACTER</div>
-                    <div style={{ fontSize:"15px", color:"#e0d4c0" }}>{d.name}, {d.age}</div>
-                    <div style={{ fontSize:"12px", color:"#555" }}>{d.job}</div>
-                  </div>
-                  <button onClick={startDay} style={{ width:"100%", padding:"13px", background:`linear-gradient(135deg, ${C}cc, ${C}77)`, border:`1px solid ${C}`, borderRadius:"12px", color:"#f0e8d8", fontSize:"15px", cursor:"pointer" }}>
-                    Start Day {dayIdx+1} →
+                  <button onClick={startDay} style={{ width:"100%", padding:"13px", background:`linear-gradient(135deg, ${C}cc, ${C}77)`, border:`1px solid ${C}`, borderRadius:"12px", color:"#f0e8d8", fontSize:"15px", cursor:"pointer", fontWeight:"bold" }}>
+                    Initiate Interrogation →
                   </button>
                 </div>
               )}
@@ -221,9 +180,9 @@
                     <span style={{ fontSize:"20px" }}>{d.icon}</span>
                     <div>
                       <div style={{ fontSize:"13px", color:"#f0e8d8" }}>{d.name} · {d.job}</div>
-                      <div style={{ fontSize:"11px", color:"#555" }}>{d.skill}</div>
+                      <div style={{ fontSize:"11px", color:"#555" }}>Target Locked</div>
                     </div>
-                    <div style={{ marginLeft:"auto", fontSize:"11px", color:C }}>{msgCount} msg</div>
+                    <div style={{ marginLeft:"auto", fontSize:"11px", color:C }}>{msgCount} / 5 msg</div>
                   </div>
 
                   <div style={{ background:"#06060e", border:"1px solid #14121e", borderRadius:"14px", height:"360px", overflowY:"auto", padding:"14px", marginBottom:"10px", display:"flex", flexDirection:"column", gap:"10px" }}>
@@ -249,7 +208,7 @@
                   </div>
 
                   <div style={{ display:"flex", gap:"8px", marginBottom:"10px" }}>
-                    <input ref={inputRef} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!loading&&send()} placeholder={`Ask ${d.name} something...`} disabled={loading}
+                    <input ref={inputRef} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!loading&&send()} placeholder={`Interrogate ${d.name}...`} disabled={loading}
                       style={{ flex:1, boxSizing: "border-box", background:"#06060e", border:"1px solid #1e1c28", borderRadius:"10px", padding:"11px 13px", color:"#ddd5c8", fontSize:"13px", outline:"none" }} />
                     <button onClick={send} disabled={loading||!input.trim()} style={{ padding:"11px 16px", background: loading||!input.trim() ? "#1a1828" : `${C}99`, border:`1px solid ${loading ? "#1a1828" : C}`, borderRadius:"10px", color:"#f0e8d8", cursor: loading ? "not-allowed" : "pointer", fontSize:"16px" }}>
                       {loading ? "…" : "↵"}
@@ -257,23 +216,22 @@
                   </div>
 
                   {msgCount >= 5 && !loading && (
-                    <button onClick={()=>setPhase("analysis")} style={{ width:"100%", padding:"12px", background:"transparent", border:`1px solid ${C}`, borderRadius:"10px", color:C, fontSize:"13px", cursor:"pointer" }}>
-                      Ready — Write my analysis →
+                    <button onClick={()=>setPhase("analysis")} style={{ width:"100%", padding:"12px", background:"transparent", border:`1px solid ${C}`, borderRadius:"10px", color:C, fontSize:"13px", cursor:"pointer", fontWeight:"bold" }}>
+                      Lock In Profile Analysis →
                     </button>
                   )}
-                  {msgCount < 5 && <div style={{ textAlign:"center", fontSize:"11px", color:"#333", padding:"8px" }}>{5-msgCount} more messages before analysis</div>}
                 </div>
               )}
 
               {phase === "analysis" && (
                 <div style={{ width:"100%", maxWidth:"640px", boxSizing: "border-box", background:"#0f0d18", border:"1px solid #1e1c28", borderRadius:"16px", padding:"22px" }}>
-                  <div style={{ fontSize:"12px", color:C, marginBottom:"10px", letterSpacing:"2px" }}>{d.icon} WRITE YOUR ANALYSIS</div>
-                  <div style={{ fontSize:"12px", color:"#555", marginBottom:"14px" }}>Based on your conversation with {d.name} — what's their hidden psychology?</div>
-                  <textarea value={guess} onChange={e=>setGuess(e.target.value)} placeholder={`${d.name} is someone who...`} disabled={loading}
+                  <div style={{ fontSize:"12px", color:C, marginBottom:"10px", letterSpacing:"2px" }}>{d.icon} FILE REPORT</div>
+                  <div style={{ fontSize:"12px", color:"#555", marginBottom:"14px" }}>What is {d.name} attempting to hide? What is their true nature?</div>
+                  <textarea value={guess} onChange={e=>setGuess(e.target.value)} placeholder={`Subject ${d.name} is demonstrating...`} disabled={loading}
                     style={{ width:"100%", minHeight:"120px", background:"#06060e", border:"1px solid #1e1c28", borderRadius:"10px", padding:"11px", color:"#ddd5c8", fontSize:"13px", outline:"none", resize:"vertical", boxSizing:"border-box", lineHeight:"1.7" }} />
                   <div style={{ display:"flex", gap:"8px", marginTop:"10px" }}>
                     <button onClick={analyze} disabled={!guess.trim()||loading} style={{ flex:1, padding:"12px", background: loading ? "#1a1828" : `linear-gradient(135deg, ${C}cc, ${C}66)`, border:`1px solid ${C}`, borderRadius:"10px", color:"#f0e8d8", fontSize:"14px", cursor: loading ? "not-allowed" : "pointer" }}>
-                      {loading ? "Analyzing..." : "Analyze →"}
+                      {loading ? "Processing..." : "Submit Report →"}
                     </button>
                     <button onClick={()=>setPhase("chat")} style={{ padding:"12px 14px", background:"transparent", border:"1px solid #1e1c28", borderRadius:"10px", color:"#555", cursor:"pointer" }}>↩</button>
                   </div>
@@ -283,7 +241,7 @@
               {phase === "result" && (
                 <div style={{ width:"100%", maxWidth:"640px", boxSizing: "border-box", display:"flex", flexDirection:"column", gap:"12px" }}>
                   <div style={{ background:"#0f0d18", border:`1px solid ${C}44`, borderRadius:"16px", padding:"22px" }}>
-                    <div style={{ fontSize:"11px", color:C, marginBottom:"12px", letterSpacing:"2px" }}>DAY {dayIdx+1} RESULT</div>
+                    <div style={{ fontSize:"11px", color:C, marginBottom:"12px", letterSpacing:"2px" }}>EVALUATION</div>
                     {scores[dayIdx] !== null && (
                       <div style={{ fontSize:"42px", fontWeight:"700", color: scores[dayIdx]>=70 ? "#70c880" : scores[dayIdx]>=50 ? "#c4a870" : "#c87060", marginBottom:"14px" }}>
                         {scores[dayIdx]}<span style={{ fontSize:"14px", color:"#555", fontWeight:"300" }}>/100</span>
@@ -292,31 +250,23 @@
                     <div style={{ fontSize:"13px", lineHeight:"1.9", color:"#c8b898", whiteSpace:"pre-wrap" }}>{result}</div>
                   </div>
                   <div style={{ background:"#0f0d18", border:"1px solid #1e1c28", borderRadius:"14px", padding:"16px" }}>
-                    <div style={{ fontSize:"11px", color:"#444", marginBottom:"6px" }}>TRUE PROFILE</div>
+                    <div style={{ fontSize:"11px", color:"#444", marginBottom:"6px" }}>TRUE HIDDEN PROFILE</div>
                     <div style={{ fontSize:"13px", color:"#9080c0", lineHeight:"1.7" }}>{d.profile}</div>
                   </div>
-                  {dayIdx < 4 ? (
-                    <button onClick={()=>{setDayIdx(i=>i+1); setPhase("intro"); setError("");}} style={{ width:"100%", padding:"13px", background:`linear-gradient(135deg, ${DAYS[dayIdx+1].color}aa, ${DAYS[dayIdx+1].color}55)`, border:`1px solid ${DAYS[dayIdx+1].color}`, borderRadius:"12px", color:"#f0e8d8", fontSize:"14px", cursor:"pointer" }}>
-                      Day {dayIdx+2}: {DAYS[dayIdx+1].title} →
+                  {dayIdx < ADVANCED_DAYS.length - 1 ? (
+                    <button onClick={()=>{setDayIdx(i=>i+1); setPhase("intro"); setError("");}} style={{ width:"100%", padding:"13px", background:`linear-gradient(135deg, ${ADVANCED_DAYS[dayIdx+1].color}aa, ${ADVANCED_DAYS[dayIdx+1].color}55)`, border:`1px solid ${ADVANCED_DAYS[dayIdx+1].color}`, borderRadius:"12px", color:"#f0e8d8", fontSize:"14px", cursor:"pointer", fontWeight:"bold" }}>
+                      Next Subject: {ADVANCED_DAYS[dayIdx+1].title} →
                     </button>
                   ) : (
                     <div style={{ background:"linear-gradient(135deg,#1a1520,#12101a)", border:"1px solid #c4a87044", borderRadius:"14px", padding:"22px", textAlign:"center" }}>
-                      <div style={{ fontSize:"28px", marginBottom:"10px" }}>🏆</div>
-                      <div style={{ fontSize:"16px", color:"#f0e8d8", marginBottom:"6px" }}>All 5 Days Complete!</div>
-                      <div style={{ fontSize:"13px", color:"#666", marginBottom:"10px" }}>Total: {total} / 500</div>
-                      <div style={{ fontSize:"14px", color:"#c4a870" }}>{total>=400?"Exceptional psychological reader":"Keep training — this skill takes time"}</div>
+                      <div style={{ fontSize:"28px", marginBottom:"10px" }}>♟️</div>
+                      <div style={{ fontSize:"16px", color:"#f0e8d8", marginBottom:"6px" }}>Simulation Complete</div>
+                      <div style={{ fontSize:"13px", color:"#666", marginBottom:"10px" }}>Total Accuracy: {total} / {maxScore}</div>
+                      <div style={{ fontSize:"14px", color:"#c4a870" }}>{total>=(maxScore*0.8)?"Master Strategist":"Further analysis required"}</div>
                     </div>
                   )}
                 </div>
               )}
-
-              <style>{`
-                @keyframes pulse { 0%,100%{opacity:.2;transform:scale(.7)} 50%{opacity:1;transform:scale(1.1)} }
-                input::placeholder,textarea::placeholder{color:#252530}
-                input:disabled,textarea:disabled{opacity:.5}
-                ::-webkit-scrollbar{width:3px}
-                ::-webkit-scrollbar-thumb{background:#2a2535;border-radius:2px}
-              `}</style>
             </div>
           );
         }
